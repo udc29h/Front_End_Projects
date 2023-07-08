@@ -13,21 +13,34 @@ const getMovies = async (url) => {
     }
 };
 
+const getGenres = async (genreIds) => {
+    try {
+        const response = await fetch("https://api.themoviedb.org/3/genre/movie/list?api_key=04c35731a5ee918f014970082a0088b1");
+        const data = await response.json();
+        const genres = data.genres.filter(genre => genreIds.includes(genre.id)).map(genre => genre.name);
+        return genres;
+    } catch (error) {
+        console.log("Error fetching genres:", error);
+        return [];
+    }
+};
+
 const showMovies = (results) => {
     movieBox.innerHTML = "";
-    results.forEach((result) => {
-        const imagePath = result.poster_path ? IMGPATH + result.poster_path : "img/image-missing.png";
+    results.forEach(async (result) => {
+        const imagePath = result.poster_path ? IMGPATH + result.poster_path : "./missing-image";
+        const genres = await getGenres(result.genre_ids);
         const box = document.createElement("div");
         box.classList.add("box");
         box.innerHTML = `
             <img src="${imagePath}" alt="" />
             <div class="overlay">
                 <div class="title">
-                    <h2>${result.title}</h2>
-                    <span>${result.vote_average}</span>
+                    <h3>${result.original_title}</h3>
+                    <span class="rating">${result.vote_average}</span>
                 </div>
-                <h3>Overview:</h3>
-                <p>${result.overview}</p>
+                <h4>Genres:</h4>
+                <p>${genres.join(", ")}</p>
             </div>
         `;
         movieBox.appendChild(box);
